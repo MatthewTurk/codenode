@@ -6,12 +6,8 @@
 # of the BSD License:  http://www.opensource.org/licenses/bsd-license.php
 #########################################################################
 
-from django.contrib import admin
+from django import forms
 
-from codenode.frontend.attach.models import AttachedFile
-
-class AttachedFileAdmin(admin.ModelAdmin):
-    pass
-
-admin.site.register(AttachedFile, AttachedFileAdmin)
+class UploadFileForm(forms.Form):
+    file = forms.FileField()
 

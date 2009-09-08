@@ -9,6 +9,7 @@
 import os
 from django.conf import settings
 from codenode.backend.kernel.engine import base
+from codenode.backend.kernel.engine import attachedfiles
 
 def build_env():
     """PYTHONPATH is usefull when codenode is not installed in the system
@@ -24,7 +25,6 @@ def build_env():
         env['PATH'] = os.getenv('PATH') 
     return env
 
-
 def build_namespace():
     from codenode.backend.kernel.engine.python.introspection import introspect
     try:
@@ -35,7 +35,8 @@ def build_namespace():
         USERNAMESPACE = locals()
         USERNAMESPACE.update({"show":codenode_plot.show, "introspect":introspect})
     except ImportError:
-        USERNAMESPACE={"introspect":introspect}
+        FILES = attachedfiles.UsersAttachedFiles(ownerid=1) #XXX
+        USERNAMESPACE={"introspect":introspect, "FILES":FILES}
     return USERNAMESPACE
 
 

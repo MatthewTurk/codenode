@@ -13,12 +13,8 @@ from django.template import RequestContext
 from django.utils import simplejson as json
 from django.contrib.auth.decorators import login_required
 
-from codenode.frontend.attach.models import Storage
-
-from django import forms
-
-class UploadFileForm(forms.Form):
-    file = forms.FileField()
+from codenode.frontend.attach.models import AttachedFile
+from codenode.frontend.attach.forms import UploadFileForm
 
 @login_required
 def attach(request, template_name='attach/attach.html'):
@@ -27,11 +23,23 @@ def attach(request, template_name='attach/attach.html'):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            attachfile = Storage()
-            attachfile.owner = request.user
-            attachfile.normal.save(request.FILES['file'].name, request.FILES['file'])
-            attachfile.save()
-            return HttpResponseRedirect('/attach/?success=true')
+            storage = AttachedFile()
+            storage.owner = request.user
+            filename = request.FILES['file'].name
+            storage.file.save(filename, request.FILES['file'])
+            storage.save()
+            return HttpResponseRedirect('/attach/?success=upload')
     else:
         form = UploadFileForm()
-    return render_to_response(template_name, {'form':form, 'user':request.user})
+        userfiles = AttachedFile.objects.filter(owner=request.user)
+    return render_to_response(template_name, {'form':form, 'userfiles':userfiles, 'user':request.user})
+
+@login_required
+def delete(request):
+    """Delete selected attached files.
+    """
+    print request.POST, request.GET # dir(request.POST)
+    if request.method == 'POST':
+        pass
+    return HttpResponseRedirect('/attach/?success=delete')
+ 

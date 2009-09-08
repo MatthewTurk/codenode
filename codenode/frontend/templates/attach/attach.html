@@ -6,16 +6,26 @@
 
   <div id='container'>
 
-    <h2 id='settings'>Attach</h1>
+    <h2 id='settings'>Attach Data Files. (Type 'FILES' in any Notebook to access)</h2>
   
     <form id='createform' method="post" enctype="multipart/form-data" action="">
     
     {{ form.errors }}
     {{ form.as_p }}
 
-    <hr>
     <p class="submit"><input type="submit" value="Upload"></p>
     </form>
+
+    {% if userfiles %}
+        <hr>
+        <h2>All Attached Files</h2>
+        <form id='deleteform' method="post" action="delete">
+        {% for file in userfiles %}
+            <p><input type="checkbox" id="cb_{{file.id}}"/>&nbsp;{{ file.file.name }}</p>
+        {% endfor %} 
+        <p class="submit"><input type="submit" value="Delete Selected Files"></p>
+        </form>
+    {% endif %}
 
   </div>
   

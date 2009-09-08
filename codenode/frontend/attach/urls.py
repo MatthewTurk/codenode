@@ -7,8 +7,9 @@
 #########################################################################
 
 from django.conf.urls.defaults import *
-from codenode.frontend.attach.views import attach
+from codenode.frontend.attach.views import attach, delete
 
 urlpatterns = patterns('',
     url(r'^$', attach, name='attach'),
+    url(r'^delete$', delete, name='delete'),
 )

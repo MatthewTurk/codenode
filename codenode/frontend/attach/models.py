@@ -11,16 +11,23 @@ from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage
 
-storage = FileSystemStorage(location="data/attach")
+"""
+TODO - Associate User Files with filesystem location:
+-----------------------------------------------------
+    1) Make sub-dirs under 'data/attach'
+    the PrimaryKey (an integer) of that user, 
+    e.g: 'data/attach/1' for the 1st User, etc.
+
+    2) Make sub-dirs under 'data/attach' have
+    guid's.  Need to add extra Model logic for this.
+
+"""
+#XXX How to make different Storage Strategies Pluggable?
+storage = FileSystemStorage(location="data/attach") #XXX location in settings
 
 # Write out a file to be used as default content
 #temp_storage.save('tests/default.txt', ContentFile('default content'))
 
-class Storage(models.Model):
-    def normal_upoad_to(self, filename):
-        print "SSSSSSSSSSS - normal_upload_to ", filename
-        return 'foo'
-
+class AttachedFile(models.Model):
     owner = models.ForeignKey(User)
-    normal = models.FileField(storage=storage, upload_to=".")
-
+    file = models.FileField(storage=storage, upload_to=".")
