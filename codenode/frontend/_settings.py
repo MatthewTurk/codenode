@@ -145,33 +145,6 @@ INSTALLED_APPS = (
     'codenode.frontend.bookshelf',
     'codenode.frontend.notebook',
     'codenode.frontend.usersettings',
+    'codenode.frontend.attach',
     'compress',
 )
-
-#########################################################
-# This is run every time something imports settings...FIX
-# Certain parts of the system might not want to import 
-# this as some settings may be overridden by cmd options.
-"""
-_BANNERLEN = 70
-try:
-    from local_settings import *
-    print "*"*_BANNERLEN
-    print "*"
-    print "* Open your web browser to http://%s:%s" % (APP_HOST, APP_PORT)
-    print "*"
-    print "*"*_BANNERLEN
-except ImportError, exp:
-    print "*"*_BANNERLEN
-    print "*"
-    print "! Warning: No 'local_settings.py' found, using defaults."
-    print "! See '$codenode/local_settings.py.example'."
-    print "*"
-    print "-"*_BANNERLEN
-    print "*"
-    print "* Open your web browser to http://%s:%s" % (APP_HOST, APP_PORT)
-    print "*"
-    print "*"*_BANNERLEN
-del _BANNERLEN
-
-"""
