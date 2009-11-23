@@ -202,6 +202,8 @@ class Interpreter(InteractiveInterpreter):
 class IPControllerInterpreter(Interpreter):
     def __init__(self, namespace=None):
         Interpreter.__init__(self, namespace)
+        # The way IPython parallelism works, we don't need to interface with
+        # the IPController directly.
         from IPython.kernel import client
         self.mec = client.MultiEngineClient()
 
@@ -210,9 +212,15 @@ class IPControllerInterpreter(Interpreter):
 
     def evaluate(self, input_string):
         # is this where we completely drop to the IPython MEC interface?
+        self.input_count += 1
         result_list = self.mec.execute(input_string)
+        out = []
+        for i,res in enumerate(result_list):
+            out += ["TASK %s:\n" % i + "\n  ".join(res['stdout'])]
+        out = "\n\n".join(out)
         result = {'input_count':result_list[0]['number'],
                   'cmd_count':result_list[0]['number'],
                   'in':result_list[0]['input']['translated'],
-                  'stdout':result_list[0]['stdout']}
-
+                  'out':out,
+                  'err':""} # the MEC doesn't implement this, I think
+        return result

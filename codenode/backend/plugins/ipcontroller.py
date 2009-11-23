@@ -3,32 +3,27 @@ import os
 
 from codenode.backend.engine import EngineConfigurationBase
 
-boot = """import threading
+boot = """import threading, subprocess
 from IPython.kernel.scripts import ipcontroller
-from codenode.backend.kernel.engine.server import EngineIPythonRPCServer
-from codenode.backend.kernel.engine.python.interpreter import IPControllerInterpreter
-from codenode.backend.kernel.engine.python.runtime import build_namespace
-namespace = build_namespace
+from codenode.engine.server import EngineRPCServer
+from codenode.engine.interpreter import IPControllerInterpreter
+from codenode.engine import runtime
+import time
 import os
 import sys
 import socket
-s = socket.socket()
-s.bind(('',0))
-port = s.getsockname()[1]
-s.close()
-del s
-server = EngineRPCServer(('localhost', port), Interpreter, namespace)
-sys.stdout.write('port:%s' % str(port))
 
-ipct = threading.Thread(target = ipcontroller.start_controller)
-ipct.start()
+port = runtime.find_port()
+runtime.ready_notification(port)
 
-# Now we spawn our mpirun tasks
-def spawn_ipengine():
-    os.system("mpirun -np 4 ipengine") # we assume ipengine is in the path
-ipe = threading.Thread(target = spawn_ipengine)
-ipe.start()
+pid1 = subprocess.Popen("ipcontroller", shell=True).pid
+time.sleep(5)
 
+pid2 = subprocess.Popen("mpirun -np 4 ipengine --mpi=mpi4py", shell=True).pid
+time.sleep(5)
+
+namespace = runtime.build_namespace
+server = EngineRPCServer(('localhost', port), IPControllerInterpreter, namespace)
 server.serve_forever()
 """
 
