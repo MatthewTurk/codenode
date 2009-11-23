@@ -199,4 +199,20 @@ class Interpreter(InteractiveInterpreter):
 
 
 
+class IPControllerInterpreter(Interpreter):
+    def __init__(self, namespace=None):
+        Interpreter.__init__(self, namespace)
+        from IPython.kernel import client
+        self.mec = client.MultiEngineClient()
+
+    def complete(self, input_string):
+        return {'out':[]}
+
+    def evaluate(self, input_string):
+        # is this where we completely drop to the IPython MEC interface?
+        result_list = self.mec.execute(input_string)
+        result = {'input_count':result_list[0]['number'],
+                  'cmd_count':result_list[0]['number'],
+                  'in':result_list[0]['input']['translated'],
+                  'stdout':result_list[0]['stdout']}
 
