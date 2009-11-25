@@ -8,6 +8,7 @@
 import os
 import uuid
 import pickle
+import types
 #from StringIO import StringIO
 
 from zope.interface import implements 
@@ -216,7 +217,7 @@ class EngineSessionAdapter(resource.Resource):
         horrible. not always eval...
         """
         out = data['out']
-        if type(out) is str:
+        if isinstance(out, types.StringTypes):
             if out.startswith("__imagefile__"):
                 image_pick = out[13:]
                 image_io = pickle.loads(image_pick)
@@ -226,6 +227,13 @@ class EngineSessionAdapter(resource.Resource):
                 data['cellstyle'] = 'outputimage'
             else:
                 data['cellstyle'] = 'outputtext'
+        payload = data.get("payload", "")
+        if payload != "":
+            image = pickle.loads(payload)
+            image_file_name = write_image(image)
+            data['out'] = image_file_name
+            data['cellstyle'] = 'outputimage'
+        
         data['cellid'] = cellid
         jsobj = json.dumps(data)
         request.write(jsobj)

@@ -18,6 +18,7 @@ abstracted out completly
 
 import sys
 import re
+import types
 from code import softspace, InteractiveInterpreter
 
 #from codenode.kernel.engine.python.outputtrap import OutputTrap
@@ -26,6 +27,19 @@ from code import softspace, InteractiveInterpreter
 from outputtrap import OutputTrap
 from completer import Completer
 from introspection import introspect
+from codenode.backend.transport import CodeNodePayload, CodeNodePayloadQueue
+
+def ensure_list(obj):
+    """
+    This function ensures that *obj* is a list.  Typically used to convert a
+    string to a list, for instance ensuring the *fields* as an argument is a
+    list.
+    """
+    if obj == None:
+        return [obj]
+    if not isinstance(obj, types.ListType):
+        return [obj]
+    return obj
 
 class codenodeError(Exception):
     pass
@@ -206,6 +220,9 @@ class IPControllerInterpreter(Interpreter):
         # the IPController directly.
         from IPython.kernel import client
         self.mec = client.MultiEngineClient()
+        self.mec.execute("from codenode.backend.transport import " +
+                         "CodeNodePayload, CodeNodePayloadQueue\n" +
+                         "__my_queue = CodeNodePayloadQueue()")
 
     def complete(self, input_string):
         return {'out':[]}
@@ -216,11 +233,15 @@ class IPControllerInterpreter(Interpreter):
         result_list = self.mec.execute(input_string)
         out = []
         for i,res in enumerate(result_list):
-            out += ["TASK %s:\n" % i + "\n  ".join(res['stdout'])]
+            rl = ensure_list(res.get("stdout", ""))
+            out += ["TASK %s:\n" % i + "\n  ".join(rl)]
         out = "\n\n".join(out)
         result = {'input_count':result_list[0]['number'],
                   'cmd_count':result_list[0]['number'],
                   'in':result_list[0]['input']['translated'],
                   'out':out,
-                  'err':""} # the MEC doesn't implement this, I think
+                  'err':"",} # the MEC doesn't implement this, I think
+        queue_results = self.mec.pull("__my_queue")
+        if len(queue_results[0].queue) > 0:
+            result['payload'] = queue_results[0].queue[0]
         return result
